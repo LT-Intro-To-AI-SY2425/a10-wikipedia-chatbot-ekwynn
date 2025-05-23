@@ -21,6 +21,8 @@ def get_page_html(title: str) -> str:
     return WikipediaPage(results[0]).html()
 
 
+
+
 def get_first_infobox_text(html: str) -> str:
     """Gets first infobox html from a Wikipedia page (summary box)
 
@@ -116,6 +118,68 @@ def get_birth_date(name: str) -> str:
 # according to the action and the argument. It is important that each function returns a
 # list of the answer(s) and not just the answer itself.
 
+def get_atomic_number(element_name: str) -> str:
+    """Gets the atomic number of the given chemical element
+
+    Args:
+        element_name - name of the element to get atomic number of
+
+    Returns:
+        atomic number of the given element
+    """
+    infobox_text = clean_text(get_first_infobox_text(get_page_html(element_name)))
+    pattern = r"(?:Atomic number.*?)(?P<number>\d+)"
+    error_text = "Page infobox has no atomic number information"
+    match = get_match(infobox_text, pattern, error_text)
+
+    return match.group("number")
+
+
+def atomic_number(matches: List[str]) -> List[str]:
+    """Returns atomic number of element in matches
+
+    Args:
+        matches - match from pattern of element to find atomic number of
+
+    Returns:
+        atomic number of element
+    """
+    return [get_atomic_number(matches[0])]
+
+def get_period(element_name: str) -> str:
+    html = get_page_html(element_name)
+    infobox_text = clean_text(get_first_infobox_text(html))
+
+    # Pattern to handle 'Period period 2' or just 'Period 2'
+    pattern = r"Period\s+period\s+(\d+)|Period\s+(\d+)"
+    error_text = f"Page infobox has no period information for {element_name}"
+    match = get_match(infobox_text, pattern, error_text)
+
+    # The match could be in group(1) or group(2) depending on which part matched
+    period_num = match.group(1) or match.group(2)
+
+    return f"Period {period_num}"
+
+def period(matches: List[str]) -> List[str]:
+    """Returns the period string of the given element."""
+    return [get_period(matches[0])]
+
+
+def get_phase(element_name: str) -> str:
+    html = get_page_html(element_name)
+    infobox_text = clean_text(get_first_infobox_text(html))
+    pattern = r"Phase at STP.*?(solid|liquid|gas|unknown)"
+    match_obj = re.search(pattern, infobox_text, re.IGNORECASE | re.DOTALL)
+    if not match_obj:
+        raise AttributeError(f"No phase info found for {element_name}")
+    return match_obj.group(1).capitalize()
+
+def phase(matches: List[str]) -> List[str]:
+    return [get_phase(matches[0])]
+
+
+
+
 
 def birth_date(matches: List[str]) -> List[str]:
     """Returns birth date of named person in matches
@@ -153,11 +217,21 @@ Action = Callable[[List[str]], List[Any]]
 
 # The pattern-action list for the natural language query system. It must be declared
 # here, after all of the function definitions
-pa_list: List[Tuple[Pattern, Action]] = [
-    ("when was % born".split(), birth_date),
-    ("what is the polar radius of %".split(), polar_radius),
+pa_list: List[Tuple[List[str], Callable]] = [
+    ("what is the atomic number of %".split(), atomic_number),
+    ("atomic number of %".split(), atomic_number),
+
+    ("phase of %".split(), phase),
+    ("what is the phase of %".split(), phase),
+    ("what is the phase at stp of %".split(), phase),
+
+    ("period of %".split(), period),
+    ("what is the period of %".split(), period),
+
     (["bye"], bye_action),
 ]
+
+
 
 
 def search_pa_list(src: List[str]) -> List[str]:
@@ -184,7 +258,7 @@ def search_pa_list(src: List[str]) -> List[str]:
 def query_loop() -> None:
     """The simple query loop. The try/except structure is to catch Ctrl-C or Ctrl-D
     characters and exit gracefully"""
-    print("Welcome to the movie database!\n")
+    print("Welcome to the periodic table of elements!\n")
     while True:
         try:
             print()
@@ -201,3 +275,4 @@ def query_loop() -> None:
 
 # uncomment the next line once you've implemented everything are ready to try it out
 query_loop()
+
