@@ -79,14 +79,6 @@ def get_match(
 
 
 def get_polar_radius(planet_name: str) -> str:
-    """Gets the radius of the given planet
-
-    Args:
-        planet_name - name of the planet to get radius of
-
-    Returns:
-        radius of the given planet
-    """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(planet_name)))
     pattern = r"(?:Polar radius.*?)(?: ?[\d]+ )?(?P<radius>[\d,.]+)(?:.*?)km"
     error_text = "Page infobox has no polar radius information"
@@ -96,14 +88,6 @@ def get_polar_radius(planet_name: str) -> str:
 
 
 def get_birth_date(name: str) -> str:
-    """Gets birth date of the given person
-
-    Args:
-        name - name of the person
-
-    Returns:
-        birth date of the given person
-    """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(name)))
     pattern = r"(?:Born\D*)(?P<birth>\d{4}-\d{2}-\d{2})"
     error_text = (
@@ -119,14 +103,6 @@ def get_birth_date(name: str) -> str:
 # list of the answer(s) and not just the answer itself.
 
 def get_atomic_number(element_name: str) -> str:
-    """Gets the atomic number of the given chemical element
-
-    Args:
-        element_name - name of the element to get atomic number of
-
-    Returns:
-        atomic number of the given element
-    """
     infobox_text = clean_text(get_first_infobox_text(get_page_html(element_name)))
     pattern = r"(?:Atomic number.*?)(?P<number>\d+)"
     error_text = "Page infobox has no atomic number information"
@@ -136,14 +112,6 @@ def get_atomic_number(element_name: str) -> str:
 
 
 def atomic_number(matches: List[str]) -> List[str]:
-    """Returns atomic number of element in matches
-
-    Args:
-        matches - match from pattern of element to find atomic number of
-
-    Returns:
-        atomic number of element
-    """
     return [get_atomic_number(matches[0])]
 
 def get_period(element_name: str) -> str:
@@ -256,8 +224,6 @@ def search_pa_list(src: List[str]) -> List[str]:
 
 
 def query_loop() -> None:
-    """The simple query loop. The try/except structure is to catch Ctrl-C or Ctrl-D
-    characters and exit gracefully"""
     print("Welcome to the periodic table of elements!\n")
     while True:
         try:
